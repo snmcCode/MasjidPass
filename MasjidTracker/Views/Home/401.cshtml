@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "No such page";
+}
+<br><br>
+<div style="text-align: center;"> 
+    @{var url = Url.Action("Signout", "Home");}
+    <h3>To use event booking, you must first login or create an account if you do not already have one.</h3>
+    <h3> <a onclick="signOut();" href="#"> Click here to continue </a></h3>
+    <div style = "opacity: 0%;"> 👀 </div>   
+</div>
+
+<script>
+       function signOut() {
+          localStorage.clear();
+          location.href = '/Signout';
+    }
+</script>

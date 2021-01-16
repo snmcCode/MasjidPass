@@ -1,0 +1,430 @@
+﻿@model MasjidTracker.FrontEnd.Models.Visitor
+
+@using FrontEnd.Models
+@using Microsoft.Extensions.Configuration
+@using System.Reflection;
+@using System
+@inject IConfiguration Configuration
+
+@{ ViewData["Title"] = "Home Page";
+    bool signinFailed = ViewBag.SigninFailed == null ? false : ViewBag.SigninFailed;
+    bool isRedirect = ViewBag.Redirected == null ? false : ViewBag.Redirected;
+    bool redirect =   ViewBag.VerifiedSoRedirect == null ? false : ViewBag.VerifiedSoRedirect;
+    var organization = ViewBag.Organization == null ? "Online" : ViewBag.Organization;
+    bool isVerified = Model == null ? false : Model.isVerified;
+    bool disableRequestButton = ViewBag.DisableRequestButton == null ? false : ViewBag.DisableRequestButton;
+
+    string requestSuccess = ViewBag.RequestSuccess == null ? null : ViewBag.RequestSuccess;
+    string requestMessage = ViewBag.RequestMessage == null ? null : ViewBag.RequestMessage; }
+
+
+<head>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+
+<div id="disableRequestButton" hidden>@disableRequestButton</div>
+<div id="organization" hidden>@organization</div>
+<div id="isVerified" hidden>@isVerified</div>
+
+@{ if (requestSuccess != null)
+    {
+        if (requestSuccess == "True")
+        {
+            <div class="alert alert-success" role="alert">
+                @requestMessage
+            </div> 
+        } else {
+            <div class="alert alert-danger" role="alert">
+                @requestMessage
+            </div> 
+        }
+    }
+
+    <button class="add-button">Add to home screen</button>
+    
+    <div class="header-card" name="ios-banner" id="ios-banner">
+        Install this webapp to your iPhone. Tap the "Share" button and select "Add to Home Screen"
+    </div>
+
+    @await Html.PartialAsync("Partial/PositiveDeclaration") 
+    if (Model != null && Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+    {
+        <div id="verifyUser">
+            @await Html.PartialAsync("Partial/VerifyVisitor")
+        </div> 
+    } 
+}
+
+<div id="userContainer" class="container-fluid" style="padding:0px; align-items:flex-start">
+    <div class="row" style="padding:0px">
+        <div class="col-sm-6" style="padding:0px">
+            @{ if (Model != null)
+                {
+                    <h1 id="pageTitle1">@ViewBag.pageTitle</h1>
+                    <img id="bannerImg" src="@String.Format("data:image/png;base64,{0}", Convert.ToBase64String(Model.QrCode))" style="width:100%" /> 
+                } else {
+                    @if (signinFailed)
+                    {
+                        <div id="signinFailed" class="alert alert-danger" role="alert">
+                            Failed to sign in. Please check your credentials. Échec de la connexion. Veuillez vérifier vos informations d'identification.
+                        </div>
+                    }
+                    <h1 id="pageTitle2"></h1>
+                        <img id="bannerImg" style="width:100%" />
+
+                        <div id="userSignIn">
+                            <form name="" method="post">
+                                <div class="form-group">
+                                    <input name="firstName" id="firstName" placeholder="First name" class="form-control" />
+                                    <input name="lastName" id="lastName" placeholder="Last name" class="form-control" />
+                                    <input name="phoneNumber" id="phoneNumber" placeholder="Phone number" class="form-control" />
+                                    <input name="redirect" value=@isRedirect.ToString() type="hidden" />
+                                </div>
+                                <div class="form-group">
+                                    <input type="submit" value="Sign In/Connexion" name="action:Signin" asp-action="Signin" asp-controller="Home" class="btn btn-primary" />
+                                    <input type="submit" value="Sign Up/S'inscrire" asp-route-type="up" asp-action="Signup" asp-controller="Home" name="action:Signup" class="btn btn-primary" />
+                                </div>
+                            </form>
+                        </div> 
+                }
+            }
+        </div>
+
+        @if (Model != null)
+        {
+            <div class="col-sm-6" id="userInfo">
+                <div>
+                    <b>First name</b>
+                </div>
+                <div id="userFirstName" style="margin-bottom:10px">@Model.FirstName</div>
+
+                <div>
+                    <b>Last name</b>
+                </div>
+                <div id="userLastName" style="margin-bottom:10px">@Model.LastName</div>
+
+                <div>
+                    <b>User ID</b>
+                </div>
+                <div id="userId" style="margin-bottom:10px"> @Model.Id</div>
+                <div id="oguserId" style="margin-bottom:10px" hidden> @Model.Id</div>
+            </div> 
+        } else {
+            <div class="col-sm-6" id="userInfo">
+                <div>
+                    <b>First name</b>
+                </div>
+                <div id="userFirstName" style="margin-bottom:10px"></div>
+
+                <div>
+                    <b>Last name</b>
+                </div>
+                <div id="userLastName" style="margin-bottom:10px"></div>
+
+                <div>
+                    <b>User ID</b>
+                </div>
+                <div id="userId" style="margin-bottom:10px"></div>
+            </div>
+        }
+    </div>
+</div>
+
+@await Html.PartialAsync("Partial/Acknowledgment")
+
+<div id="homeInfo">
+    <h4 style="text-align:center">
+        Get your Masjid Pass to use when entering the mosque
+    </h4>
+    <p style="margin:15px">
+        <h5>Welcome back to the mosques!</h5>
+
+        The reopening of our mosques comes with important conditions to help ensure your safety and the safety of our community.<br /><br />
+
+        To quickly contact you in the unfortunate case that you may have been exposed to someone with COVID-19 while at our facility, we need your help.<br /><br />
+
+        <h5>Steps:</h5>
+        &emsp;1 - Sign Up to get your Masjid Pass or Sign in to access one if you’ve previously registered.<br />
+        &emsp;2 - Input the verification code sent to your phone into the Masjid Pass 'Verification Code' field and click Verify.<br />
+        &emsp;3 - Scan your Masjid Pass each time you enter the mosque.<br />
+        &emsp;4 - For easy access to your Masjid Pass, add it to your device’s Home Screen, or take a screenshot, or print it.<br /><br />
+
+        The information you provide will not be shared outside of Masjid Pass except in the case that Public Health needs to contact you for COVID-19 contact tracing.
+    </p>
+</div>
+
+<hr class="dashed">
+
+<div id="homeInfoFR">
+    <h4 style="text-align:center">
+        Obtenez votre Masjid Pass à utiliser lorsque vous entrez dans la mosquée
+    </h4>
+    <p style="margin:15px">
+        <h5>
+            Bienvenue à notre mosquée!
+        </h5>
+
+        La réouverture de nos mosquées s’accompagne de conditions importantes pour assurer votre sécurité et celle de notre communauté.<br /><br />
+
+        Pour vous contacter rapidement dans le cas infortuné où vous auriez été exposé à une personne atteinte de COVID-19 pendant votre séjour dans notre établissement, nous avons besoin de votre aide.<br /><br />
+
+        <h5>Étapes:</h5>
+        &emsp;1 - Inscrivez-vous pour obtenir votre Masjid Pass ou connectez-vous pour y accéder si vous êtes déjà inscrit.<br />
+        &emsp;2 - Saisissez le code de vérification envoyé à votre téléphone dans le champ « Code de vérification » du Masjid Pass et cliquez sur Vérifier.<br />
+        &emsp;3 - Scannez votre Masjid Pass à chaque fois que vous entrez dans la mosquée.<br />
+        &emsp;4 - Pour accéder facilement à votre Masjid Pass, ajoutez-le à l'écran d'accueil de votre appareil, ou faites une capture d'écran, ou imprimez-le.<br /><br />
+
+        Les informations que vous fournissez ne seront pas partagées en dehors du Masjid Pass, sauf dans le cas où la Santé Publique a besoin de vous contacter à des fins de traçage lié à la COVID-19.
+    </p>
+</div>
+
+<div>
+    <div id="printDiv" style="float:right">
+        <form name="" method="post">
+            <div class="form-group">
+                <input type="submit" style="margin-right:10px" onclick="signOut()" value="Sign Out" name="action:Signout" asp-action="Signout" asp-controller="Home" class="btn btn-primary" />
+                <button id="printButton" class="btn btn-outline-primary" onclick="printDiv()" asp-action="Index" asp-controller="Home" style="float:right">Print/Imprimer</button>
+            </div>
+        </form>
+    </div>
+    <br /><br />
+</div>
+
+<div>
+    @{ string version = Assembly.GetEntryAssembly().GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>().InformationalVersion.ToString().Split('-')[1]; }
+    version:
+    @version
+</div>
+<script>
+
+    // Detects if device is on iOS
+    const isIos = () => {
+        const userAgent = window.navigator.userAgent.toLowerCase();
+        return /iphone|ipad|ipod/.test(userAgent);
+    }
+    // Detects if device is in standalone mode
+    const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
+    $(document).ready(function () {
+
+        if (isIos() && !isInStandaloneMode()) {
+            $("#ios-banner").show();
+        } else {
+            $("#ios-banner").hide();
+        }
+
+        $('#userInfo').hide();
+        $('#printDiv').hide();
+
+        var dataImage = localStorage.getItem('imgData');
+        var bannerImage = document.getElementById('bannerImg');
+        if (dataImage != null && bannerImage.src == "") {
+            loadQRCode();
+        }
+        else if (bannerImg.src != "") {
+            saveQRCode();
+        }
+
+    });
+
+    function toggleButton() {
+        var toggleRequestButton = $("#disableRequestButton").html();
+
+        if (toggleRequestButton == "True") {
+            var id = "requestCode";
+            document.getElementById(id).disabled = true;
+            setTimeout(function(){document.getElementById(id).disabled = false;},20000);
+        }
+    }
+
+    function printDiv()
+    {
+        var mywindow = window.open();
+        var title = '@(ViewBag.printTitle)';
+
+        if (title == "") {
+            title = localStorage.getItem('printTitle');
+        }
+
+        mywindow.document.write([
+            '<html>',
+            '   <head>',
+            '   </head>',
+            '<body>',
+                '<div id="content" style="border-style:solid; width:320px; height:200px ">',
+                    '<h3 style="margin-top: 10px;margin-left:5px; margin-bottom:0px; padding: 0;">'+title+' </h3>',
+                    '<div id="left" style="width: 45%; float:left">',
+                        '<img "style="margin-top:10px" padding: 0; width="160" height="160" src="' + document.getElementById('bannerImg').src + '"/>',
+                    '</div>',
+
+                    '<div id="right" style="width: 51%;height:165px; position: relative;float:right ">',
+                        '<div> ',
+                        document.getElementById('userInfo').innerHTML,
+                        '</div>',
+                        '<span id="object4" style="position:absolute; bottom:0; right:0;font-size:13px"> Tested Positive? <strong>613.801.5377</strong></span>',
+                    '</div>',
+                    '<br style="clear:both;" />',
+
+                '</div>',
+            '</body>',
+            '</html>'
+        ].join(''));
+
+        setTimeout(function() {
+            mywindow.print();
+            mywindow.close();
+        }, 250);
+    }
+
+
+    function getBase64Image(img) {
+
+        var bannerImage = $("#bannerImg");
+        var canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, bannerImage.width(), bannerImage.height());
+
+        var dataURL = canvas.toDataURL("image/png");
+        return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+    }
+
+    function saveQRCode() {
+        var isVerified = $("#isVerified").html();
+        if (isVerified == "True") {
+            var bannerImage = document.getElementById('bannerImg');
+            var imgData = getBase64Image(bannerImage);
+            localStorage.setItem("imgData", imgData);
+
+            var userFirstName = $('#userFirstName');
+            var userLastName = $('#userLastName');
+            var userId = $('#userId');
+            var pageTitle = $('#pageTitle1');
+            var oguserId = $('#oguserId');
+
+@***************************************************@
+@*shortening the ID*@
+@*****************************************************@
+            var listId = userId.html().split('-');
+            let last = listId.length - 1;
+            let shortId = listId[last];
+            $('#userId').html("*"+shortId);
+@***************************************************@
+
+            if (userFirstName != null) {
+                localStorage.setItem("firstName", userFirstName.html());
+                localStorage.setItem("lastName", userLastName.html());
+                localStorage.setItem("id", userId.html());
+                localStorage.setItem("isVerified", isVerified);
+                localStorage.setItem("pageTitle", pageTitle.html());
+                localStorage.setItem("printTitle", '@(ViewBag.printTitle)');
+                localStorage.setItem("oguserId", oguserId.html()); 
+
+                $('#userInfo').show();
+                $('#printDiv').show();
+                $('#verifyUser').hide();
+            }
+        } else {
+            $('#userContainer').hide();
+            $('#verifyUser').show();
+            toggleButton();
+        }
+
+        $("#userSignIn").hide();
+        $("#homeInfo").hide();
+        $("#homeInfoFR").hide();
+
+        if ('@redirect' == "True"){
+            location.href = "/Events/Index";
+        }
+
+    }
+
+    function loadQRCode() {
+        if ('@isRedirect' == "True"){
+            return;
+        }
+        var isVerified = localStorage.getItem('isVerified');
+
+        if (isVerified == "True") {
+            var dataImage = localStorage.getItem('imgData');
+
+            if (dataImage != null) {
+                bannerImg = document.getElementById('bannerImg');
+                bannerImg.src = "data:image/png;base64," + dataImage;
+
+                var firstName = localStorage.getItem('firstName');
+                var lastName = localStorage.getItem('lastName');
+                var userId = localStorage.getItem('id');
+                var pageTitle = localStorage.getItem('pageTitle');
+                var oguserId = localStorage.getItem('oguserId');
+
+                $.post('@Url.Action("RegisterCookies","Home")',
+                {
+                    VisitorId: oguserId
+                },
+                function(data){
+                });                  
+                
+                $('#userFirstName').html(firstName);
+                $('#userLastName').html(lastName);
+                $('#userId').html(userId);
+                $('#pageTitle2').html(pageTitle);
+
+                if ('@redirect' == "True"){
+                    location.href = "/Events/Index";
+                }
+
+                $('#userInfo').show();
+                $('#printDiv').show();
+                $('#verifyUser').hide();
+
+            }
+        } else {
+            $('#userContainer').hide();
+            $('#verifyUser').show();
+            toggleButton();
+        }
+
+        $("#userSignIn").hide();
+        $("#homeInfo").hide();
+        $("#homeInfoFR").hide();
+    }
+
+    function signOut() {
+        localStorage.clear();
+        location.href = '/Signout';
+    }
+
+    let deferredPrompt;
+    const addBtn = document.querySelector('.add-button');
+    addBtn.style.display = 'none';
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      deferredPrompt = e;
+      // Update UI to notify the user they can add to home screen
+      addBtn.style.display = 'block';
+
+      addBtn.addEventListener('click', (e) => {
+        // hide our user interface that shows our A2HS button
+        addBtn.style.display = 'none';
+        // Show the prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the A2HS prompt');
+            } else {
+              console.log('User dismissed the A2HS prompt');
+            }
+            deferredPrompt = null;
+          });
+      });
+    });
+</script>

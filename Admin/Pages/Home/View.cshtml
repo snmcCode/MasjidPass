@@ -1,0 +1,129 @@
+@page "{Id?}/{FirstName?}/{LastName?}"
+@using Admin.Models;
+@model Admin.Pages.Home.ViewModel
+@{
+   
+}
+
+<div id="userContainer" class="container-fluid" style="padding:0px; align-items:flex-start">
+    <div class="row" style="padding:0px">
+        <div class="col-sm-6" style="padding:0px">
+            @{           
+            <img id="bannerImg" src="@String.Format("data:image/png;base64,{0}", Convert.ToBase64String(@Model.Visitor.QrCode))" style="width:100%" />
+            }
+        </div>
+
+
+        @{
+            <div class="col-sm-6" id="userInfo">
+                
+                <div>
+                    <b>First name</b>
+                </div>
+                <div id="userFirstName" style="margin-bottom:10px"> @Model.Visitor.FirstName </div>
+
+                <div>
+                    <b>Last name</b>
+                </div>
+                <div id="userLastName" style="margin-bottom:10px"> @Model.Visitor.LastName </div>
+
+                <div>
+                    <b>User ID</b>
+                </div>
+                <div id="userId" style="margin-bottom:10px"> @Model.Visitor.Id </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="row" style=margin-left:40px;>
+      <div style="margin-left: 2%;">
+        <form method = "post">
+            <input type="submit" 
+                class = "btn btn-outline-primary"
+                value="Register Another" 
+                asp-page-handler="RegisterAnother" />
+        </form>
+    </div>
+
+    <div style="margin-left: 2%;">
+        <form method = "post">
+            <input type="submit" 
+                class = "btn btn-outline-primary"
+                value="Login Another" 
+                asp-page-handler="LoginAnother" />
+        </form>
+    </div>
+
+    <div id="printDiv" style = "margin-left: 2%" >
+        <button id="printButton" class="text-center btn btn-outline-primary" onclick="printDiv()">Print</button>
+    </div>
+</div>
+
+<div class = "row">
+    
+</div>
+
+<script>
+   
+
+
+    function printDiv()
+    {
+        @***************************************************@
+        @* shortening the ID *@
+        @*****************************************************@
+        var userId = $('#userId');
+        if (!(userId.html().startsWith("*"))) {
+            var listId = userId.html().split('-');
+            let last = listId.length - 1;
+            let shortId = listId[last];
+            $('#userId').html("*" + shortId);
+        } 
+        @***************************************************@
+        
+
+        let title = '@(Model.printTitle)';
+        if (title == null) {
+            title = "Masjid Title";
+        }
+
+
+        
+
+        @*let title = "Masjid Title";*@
+
+        var mywindow = window.open();
+
+        mywindow.document.write([
+            '<html>',
+            '   <head>',
+            '   </head>',
+            '<body>',
+            '<div id="content" style="border-style:solid; width:320px; height:200px ">',
+            '<h3 style="margin-top: 10px;margin-left:5px; margin-bottom:0px; padding: 0;">' + title + ' </h3>',
+            '<div id="left" style="width: 45%; float:left">',
+            '<img "style="margin-top:10px" padding: 0; width="160" height="160" src="' + document.getElementById('bannerImg').src + '"/>',
+            '</div>',
+
+            '<div id="right" style="width: 51%;height:165px; position: relative;float:right ">',
+            '<div> ',
+            document.getElementById('userInfo').innerHTML,
+            '</div>',
+            '<span id="object4" style="position:absolute; bottom:0; right:0;font-size:13px"> Tested Positive? <strong>613.801.5377 </strong></span>',
+            '</div>',
+            '<br style="clear:both;" />',
+
+            '</div>',
+            '</body>',
+            '</html>'
+    ].join(''));
+
+        setTimeout(function() {
+            mywindow.print();
+            mywindow.close();
+        }, 250);
+
+    
+    }
+</script>
